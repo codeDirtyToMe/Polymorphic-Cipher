@@ -21,6 +21,13 @@ or decipher more than one message in a single session. Actually, the likelyhood 
 the same. Ascii to binary function created and working. The key and plain/cipher texts can and
 will be converted to binary."""
 
+"""9 October 2017 : Started to use classes to cut down on the number of global variables. I
+have it working for the plainText variable assigned to class message() and the passKey variable
+assigned to the class key. The intent is to onlyuse two main variables; one of class type 
+message and one of class type key. I really need to sharpen my flowchart game before continuing.
+This code is starting to get a bit unwieldy."""
+
+
 #Set up the options.
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filein", type=str, help="\"message to be enciphered or deciphered.\"")
@@ -44,18 +51,31 @@ argNoOutput = arguments.nooutput
 argNoClip = arguments.noclip
 
 #Global Variables################################################################################################
-#Strings
-passKey = str()
-plainText = str()
+class key() :
+    def __init__(self, plain = "", bin = "") :
+        self.plain = plain
+        self.bin = bin
+
+    def decVal(self) :
+        pass
+
+class message() :
+    def __init__(self, plainText = "", cipherText = "", plainBin = "", cipherBin = ""):
+        self.plainText = plainText
+        self.cipherText = cipherText
+        self.plainBin = plainBin
+        self.cipherBin = cipherBin
+
+plainText = message()
+passKey = key()
 cipherText = str()
 mainMenuChoice = str()
 
 #Lists
 cipherTextBin = list()
-plainTextBin = list()
-passKeyBin = list()
 
 #Functions########################################################################################################
+
 #Banner###########################################################################################################
 def banner() :
     print("--------Brutal Cipher v1-----------")
@@ -66,9 +86,10 @@ def keyCollection() :
     global passKey
     os.system('clear')
     banner()
-    passKey = input("\nEnter the key \u2192 ") #Manual key collection.
+    passKey.plain = input("\nEnter the key \u2192 ") #Manual key collection.
+    print(passKey.plain)
     os.system('clear')
-    return
+    return passKey.plain
 
 #Input Menu#######################################################################################################
 def inputMenu(choiceFromMainMenu) :
@@ -90,8 +111,8 @@ def inputMenu(choiceFromMainMenu) :
     if inputChoice == "F" or inputChoice == "f" or inputChoice == "I" or inputChoice == "i" or inputChoice == "X" or inputChoice == "x" :
         if inputChoice == "I" or inputChoice == "i" :
             if mainMenuChoice == "E" or mainMenuChoice == "e" :
-                plainText = input("Enter the plaintext: ")
-                return plainText
+                plainText.plainText = input("Enter your message: ")
+                return plainText.plainText
             elif mainMenuChoice == "D" or mainMenuChoice == "i" :
                 cipherText = input("Enter the ciphertext: ")
                 return cipherText
@@ -142,29 +163,28 @@ Things that are converted to binary:
     passKey
     plainText or cipherText
 """
-def asciiToBin() :
+def asciiToBin() : #Add this functionality to the class.
     #Allow global variables to be reassigned.
     global cipherText
     global plainText
     global passKey
     global mainMenuChoice
-    global plainTextBin
     global cipherTextBin
-    global passKeyBin
     
     #Convert the passKey to binary representation of characters.
-    passKeyBin = list()
-    for q in passKey :
-        passKeyBin.append(bin(ord(q)))
+    passKey.bin = list() #Add this functionality to the class.
+    for q in passKey.plain :
+        passKey.bin.append(bin(ord(q)))
     #Remove the '0b' from each char.
-    passKeyBin = zeroBStripper(passKeyBin)
+    passKey.bin = zeroBStripper(passKey.bin)
     
-    #Determin if user is enciphering or deciphering data.
+    #Determine if user is enciphering or deciphering data.
     if mainMenuChoice == "E" or mainMenuChoice == "e" :
         #Convert plainText to binary representation of characters.
-        for e in plainText :
-            plainTextBin.append(bin(ord(e)))
-        plainTextBin = zeroBStripper(plainTextBin)
+        plainText.plainBin = list()
+        for e in plainText.plainText :
+            plainText.plainBin.append(bin(ord(e)))
+        plainText.plainBin = zeroBStripper(plainText.plainBin)
     elif mainMenuChoice == "D" or mainMenuChoice == "d" :
         #Convert cipherText to binary representation of characters.
         for d in cipherText :
@@ -188,11 +208,11 @@ def zeroBStripper(workingList) :
 
 #Brutal Cipher Encryption#####################################################################################
 def brutalEncipher() :
-    global plainTextBin
+    global plainText
     global passKeyBin
 
-    print("The plain text in binary is: " + str("".join(plainTextBin)))
-    print("The key in binary is : " + str("".join(passKeyBin)))
+    print("The plain text in binary is: " + str("".join(plainText.plainBin)))
+    print("The key in binary is : " + str("".join(passKey.bin)))
 
     #Ideas for this algorithm.
         #Split into 256 bit block size
