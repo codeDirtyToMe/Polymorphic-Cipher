@@ -21,17 +21,6 @@ or decipher more than one message in a single session. Actually, the likelyhood 
 the same. Ascii to binary function created and working. The key and plain/cipher texts can and
 will be converted to binary."""
 
-#To-do List###################################################################################################
-#1. Finish menu                   //Mostly complete minus the fileInput()
-#2. Convert passwd to binary.     //Done.
-#3. Convert plaintext to binary.  //Done.
-#3a.Convert ciphertext to binary. //Done.
-#4. Create encryption cipher.
-   #a. Substitution.
-   #b. Transposition.
-#5. Create decryption cipher.
-#6. Output plaintext/ciphertext to terminal/file.
-
 #Set up the options.
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filein", type=str, help="\"message to be enciphered or deciphered.\"")
