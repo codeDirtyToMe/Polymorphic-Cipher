@@ -1,5 +1,5 @@
 #!/usr/bin/python3.5
-import os, shutil, sys, re, pyperclip, argparse, binascii
+import os, shutil, sys, re, pyperclip, argparse, binascii, math
 from time import sleep
 
 #Brutal Cipher v1
@@ -52,9 +52,10 @@ argNoClip = arguments.noclip
 
 #Global Variables################################################################################################
 class key() :
-    def __init__(self, plain = "", bin = "") :
+    def __init__(self, plain = "", bin = "", ext_bin = "") :
         self.plain = plain
         self.bin = bin
+        self.ext_bin = ext_bin
 
     def decVal(self) :
         pass
@@ -68,11 +69,8 @@ class message() :
 
 plainText = message()
 passKey = key()
-cipherText = str()
+cipherText = message()
 mainMenuChoice = str()
-
-#Lists
-cipherTextBin = list()
 
 #Functions########################################################################################################
 
@@ -83,11 +81,9 @@ def banner() :
 
 #Key Input########################################################################################################
 def keyCollection() :
-    global passKey
     os.system('clear')
     banner()
     passKey.plain = input("\nEnter the key \u2192 ") #Manual key collection.
-    print(passKey.plain)
     os.system('clear')
     return passKey.plain
 
@@ -95,8 +91,6 @@ def keyCollection() :
 def inputMenu(choiceFromMainMenu) :
     #Allow global assigning.
     global mainMenuChoice
-    global plainText
-    global cipherText
 
     #Display menu and as for file or interactive input.
     os.system('clear')
@@ -114,8 +108,8 @@ def inputMenu(choiceFromMainMenu) :
                 plainText.plainText = input("Enter your message: ")
                 return plainText.plainText
             elif mainMenuChoice == "D" or mainMenuChoice == "i" :
-                cipherText = input("Enter the ciphertext: ")
-                return cipherText
+                cipherText.cipherText = input("Enter the ciphertext: ")
+                return cipherText.cipherText
             else :
                 print("Major Error: exit 1")
                 exit(1)
@@ -165,11 +159,7 @@ Things that are converted to binary:
 """
 def asciiToBin() : #Add this functionality to the class.
     #Allow global variables to be reassigned.
-    global cipherText
-    global plainText
-    global passKey
     global mainMenuChoice
-    global cipherTextBin
     
     #Convert the passKey to binary representation of characters.
     passKey.bin = list() #Add this functionality to the class.
@@ -187,9 +177,10 @@ def asciiToBin() : #Add this functionality to the class.
         plainText.plainBin = zeroBStripper(plainText.plainBin)
     elif mainMenuChoice == "D" or mainMenuChoice == "d" :
         #Convert cipherText to binary representation of characters.
-        for d in cipherText :
-            cipherTextBin.append(bin(ord(d)))
-        cipherTextBin = zeroBStripper(cipherTextBin)
+        cipherText.cipherBin = list()
+        for d in cipherText.cipherText :
+            cipherText.cipherBin.append(bin(ord(d)))    #None of these variables exist
+        cipherText.cipherBin = zeroBStripper(cipherText.cipherBin)
     else :
         print("Error. Exit 1")
         exit(1)
@@ -208,11 +199,27 @@ def zeroBStripper(workingList) :
 
 #Brutal Cipher Encryption#####################################################################################
 def brutalEncipher() :
-    global plainText
-    global passKeyBin
+    #duplicate key to match size of plaintext.
+    if len(passKey.bin) < len(plainText.plainBin) :
+        keyDifference = math.ceil(float(len(plainText.plainBin) / len(passKey.bin)))
+        passKey.ext_bin = passKey.bin * keyDifference
 
-    print("The plain text in binary is: " + str("".join(plainText.plainBin)))
-    print("The key in binary is : " + str("".join(passKey.bin)))
+        if len("".join(passKey.ext_bin)) > len("".join(plainText.plainBin)) :
+            binKeyDifference = int(len("".join(passKey.ext_bin)) - len("".join(plainText.plainBin)))
+            #Remove the excess bits from the key.
+            #Gotta make a working list first.
+            passKeyList = list("".join(passKey.ext_bin))
+            for x in range(binKeyDifference) : #Delete the last index value of the list x times based on the key difference.
+                del passKeyList[-1]
+            passKey.ext_bin = "".join(passKeyList) #Reset the value of the extended binary key.
+        elif len("".join(passKey.ext_bin)) == len("".join(plainText.plainBin)) :
+            pass
+        else :
+            exit(1)
+    elif len(passKey.bin) > len(plainText.plainBin) :
+        #Need to remove the excess bins just like I did above, so I should just make it a separate function,
+        #bitRemover()
+        exit(0)
 
     #Ideas for this algorithm.
         #Split into 256 bit block size
@@ -223,6 +230,10 @@ def brutalEncipher() :
         #XOR
         #Transpose key at some point?
     exit(0)
+
+#Excess Bit Remover###########################################################################################
+def bitRemover(workingKeyBin, workingMessageBin) :
+    return
 
 #Collatz Sequencer############################################################################################
 def collatzSequencer() : #This is working as a test. If one wants to see how it works, uncomment it below and comment out everything else
