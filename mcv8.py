@@ -1,6 +1,5 @@
 #!/usr/bin/python3.5
 import os, shutil, sys, re, pyperclip, argparse, binascii, math
-from time import sleep
 
 #Brutal Cipher v1
 #Formally known as Master Crypt
@@ -23,10 +22,14 @@ will be converted to binary."""
 
 """9 October 2017 : Started to use classes to cut down on the number of global variables. I
 have it working for the plainText variable assigned to class message() and the passKey variable
-assigned to the class key. The intent is to onlyuse two main variables; one of class type 
+assigned to the class key. The intent is to only use two main variables; one of class type 
 message and one of class type key. I really need to sharpen my flowchart game before continuing.
 This code is starting to get a bit unwieldy."""
 
+"""10 October 2017 : Encryption works with a basic XOR cipher as long as the password is <= to
+the length of the message. I still need to be able to cut excess bits of the password in the
+rare occasion when the password is longer than the message. Perhaps I should just return a 
+condescending message if this occurs."""
 
 #Set up the options.
 parser = argparse.ArgumentParser()
@@ -152,11 +155,6 @@ def mainMenu() :
         mainMenu()
 
 #Convert ascii to binary######################################################################################
-"""
-Things that are converted to binary:
-    passKey
-    plainText or cipherText
-"""
 def asciiToBin() : #Add this functionality to the class.
     #Allow global variables to be reassigned.
     global mainMenuChoice
@@ -194,11 +192,35 @@ def zeroBStripper(workingList) :
         del zHolder[0:2] #Delete the '0b'
         del workingList[z] #Remove the original '0b' containing value.
         workingList.insert(z, "".join(zHolder)) #Replace old '0b' value with non-0b binary value.
+    workingList = "".join(workingList)
 
     return workingList
 
+#Exclusive OR#################################################################################################
+def XOR(binKey, binMessage) :
+    print("Binary key: " + str(binKey))#delete me                   #XOR
+    print("Binary msg: " + str(binMessage))#delete me            #0 & 0 = 0
+    binKey = list(binKey)                                        #0 & 1 = 1
+    binMessage = list(binMessage)                                #1 & 0 = 1
+    cipher = []                                                  #1 & 1 = 0
+
+    for z in range(len(binKey)) : #My super-noob XOR cipher. There's another way of doing this - var1 ^ var2,
+        if binKey[z] == str(0) and binMessage[z] == str(0) : #except that it requires the use of decimals for
+            cipher.append(str(0))                                 #some reason. Fuck it, we'll do it live!
+        elif binKey[z] == str(0) and binMessage[z] == str(1) :
+            cipher.append(str(1))
+        elif binKey[z] == str(1) and binMessage[z] == str(0) :
+            cipher.append(str(1))
+        elif binKey[z] == str(1) and binMessage[z] == str(1) :
+            cipher.append(str(0))
+        else :
+            print("Error: None binary value passed to XOR().")
+            exit(1)
+
+    return cipher
+
 #Brutal Cipher Encryption#####################################################################################
-def brutalEncipher() :
+def keyLengthMatching() :
     #duplicate key to match size of plaintext.
     if len(passKey.bin) < len(plainText.plainBin) :
         keyDifference = math.ceil(float(len(plainText.plainBin) / len(passKey.bin)))
@@ -211,29 +233,22 @@ def brutalEncipher() :
             passKeyList = list("".join(passKey.ext_bin))
             for x in range(binKeyDifference) : #Delete the last index value of the list x times based on the key difference.
                 del passKeyList[-1]
+
             passKey.ext_bin = "".join(passKeyList) #Reset the value of the extended binary key.
+            return passKey.ext_bin
+
         elif len("".join(passKey.ext_bin)) == len("".join(plainText.plainBin)) :
             pass
         else :
             exit(1)
     elif len(passKey.bin) > len(plainText.plainBin) :
-        #Need to remove the excess bins just like I did above, so I should just make it a separate function,
-        #bitRemover()
+        #Need to remove the excess bits just like I added above.
+        #This should be an exceedingly rare occurence. It can wait.
         exit(0)
+    else : #Key is already the same length as the message. Unlikely, but possible.
+        return passKey.bin
 
-    #Ideas for this algorithm.
-        #Split into 256 bit block size
-        #transpose
-        #XOR
-        #split into 128 bit block size
-        #transpose based on some sort of password attribute like len(passKey) % 2 != 0
-        #XOR
-        #Transpose key at some point?
     exit(0)
-
-#Excess Bit Remover###########################################################################################
-def bitRemover(workingKeyBin, workingMessageBin) :
-    return
 
 #Collatz Sequencer############################################################################################
 def collatzSequencer() : #This is working as a test. If one wants to see how it works, uncomment it below and comment out everything else
@@ -252,12 +267,20 @@ def collatzSequencer() : #This is working as a test. If one wants to see how it 
         print("The #" + str(startingX) + " takes " + str(counter) + " times.")
         startingX += 1
 
+#The meat & potatoes########################################################################################
+#The intention here is to have the steps in called via a loop based, the order of which is based on the
+#collatz sequence. This will take a hot minute.
+def brutalCipher(ky, msg) :
+    cipherText.cipherBin = XOR(ky, msg)
+    print("Binary cip: " + str("".join(cipherText.cipherBin))) #Delete me.
+    return
+
 #Main#########################################################################################################
 def main() : #Old habit...
     mainMenu()
     keyCollection()
     asciiToBin()
     #collatzSequencer()
-    brutalEncipher()
+    brutalCipher(keyLengthMatching(), plainText.plainBin)
     exit(0)
 main()
