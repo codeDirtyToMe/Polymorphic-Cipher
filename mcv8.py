@@ -55,13 +55,20 @@ argNoClip = arguments.noclip
 
 #Global Variables################################################################################################
 class key() :
-    def __init__(self, plain = "", bin = "", ext_bin = "") :
+    def __init__(self, plain = "", bin = "", ext_bin = "", decimal = "") :
         self.plain = plain
         self.bin = bin
         self.ext_bin = ext_bin
+        self.decimal = decimal
 
-    def decVal(self) :
-        pass
+    def decVal(self) : #Method for converting key to base 10 IOT be used with Collatz conjecture.
+        if self.ext_bin != '' :
+            return int(self.ext_bin, 2)
+        elif self.bin != '' :
+            return int(self.bin, 2)
+        else :
+            print("Your key length is < the message. What is wrong with you?")
+            exit(1) #Should only happen if message is less than key. Not likely.
 
 class message() :
     def __init__(self, plainText = "", cipherText = "", plainBin = "", cipherBin = ""):
@@ -221,7 +228,7 @@ def XOR(binKey, binMessage) :
 
 #Brutal Cipher Encryption#####################################################################################
 def keyLengthMatching() :
-    #duplicate key to match size of plaintext.
+    #Duplicate key to match size of plaintext if necessary.
     if len(passKey.bin) < len(plainText.plainBin) :
         keyDifference = math.ceil(float(len(plainText.plainBin) / len(passKey.bin)))
         passKey.ext_bin = passKey.bin * keyDifference
@@ -251,28 +258,28 @@ def keyLengthMatching() :
     exit(0)
 
 #Collatz Sequencer############################################################################################
-def collatzSequencer() : #This is working as a test. If one wants to see how it works, uncomment it below and comment out everything else
-    limit = 999999
-    startingX =999900
+def collatzSequencer(decimal) : 
+    counter = 0
+    x = decimal
 
-    while startingX <= limit :
-        x = startingX
-        counter = 0
-        while x != 1 :
-            counter += 1
-            if x % 2 != 0 :
-                x = (x * 3) + 1
-            else :
-                x = x / 2
-        print("The #" + str(startingX) + " takes " + str(counter) + " times.")
-        startingX += 1
+    while x != 1:
+        counter += 1
+        if x % 2 != 0:
+            x = (x * 3) + 1
+        else:
+            x = x / 2
 
-#The meat & potatoes########################################################################################
+    return counter
+
+#The meat & potatoes##########################################################################################
 #The intention here is to have the steps in called via a loop based, the order of which is based on the
 #collatz sequence. This will take a hot minute.
 def brutalCipher(ky, msg) :
     cipherText.cipherBin = XOR(ky, msg)
     print("Binary cip: " + str("".join(cipherText.cipherBin))) #Delete me.
+    passKey.decimal = passKey.decVal()
+    print("Key decimal val: " + str(passKey.decimal))
+    print("The Collatz val of the key: " + str(collatzSequencer(passKey.decimal)) + " iterations.")
     return
 
 #Main#########################################################################################################
